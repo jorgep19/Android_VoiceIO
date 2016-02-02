@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">VoiceIO</string>
+    <string name="actions_settings">Settings</string>
+    <string name="voice_input_prompt">I\'m all ears</string>
+    <string name="no_support_for_voice">I\'m Sorry I can process Voice Input</string>
+    <string name="mic_btn_lbl">Tap to speak</string>
+    <string name="readBtnDesc">Makes the phone say the item through the speakers</string>
+
+    <string name="spanish">Spanish</string>
+    <string name="english">English</string>
+    <string name="french">French</string>
+</resources>
