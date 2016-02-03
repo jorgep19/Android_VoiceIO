@@ -1,11 +1,9 @@
-package com.jpdevs.myapplication;
+package com.jpdevs.wear;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.wearable.view.WatchViewStub;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 
@@ -18,31 +16,29 @@ public class MainActivity extends Activity {
     private static final int SPEECH_REQUEST_CODE = 19;
 
     private Ears ears;
-    private ImageButton input;
+    private ImageButton micBtn;
     private GoogleApiClient gClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        WatchViewStub stub = (WatchViewStub) findViewById(R.id.watch_view_stub);
 
         ears = new Ears(SPEECH_REQUEST_CODE);
-        gClient = getGoogleClient();
+        gClient = buildGoogleApiClient();
 
-        stub.setOnLayoutInflatedListener(new WatchViewStub.OnLayoutInflatedListener() {
+        // Setup microphone button behavior
+        micBtn = (ImageButton) findViewById(R.id.mic_btn);
+        micBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onLayoutInflated(WatchViewStub stub) {
-                input = (ImageButton) stub.findViewById(R.id.input_btn);
-                input.setEnabled(false);
-                input.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        ears.startListening(MainActivity.this);
-                    }
-                });
+            public void onClick(View v) {
+                ears.startListening(MainActivity.this);
             }
         });
+
+        // Disable the button temporally so that the user can't press it until the Google
+        // Client has connected
+        micBtn.setEnabled(false);
     }
 
     @Override
@@ -55,41 +51,57 @@ public class MainActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        // If our watch ears detect a sound that should be processed we will process the sound
+        // to get our guesses and then send this data to the phone through out custom AsyncTask
         if(ears.shouldProcessSound(requestCode, resultCode, data)) {
             Ears.Guess[] guesses = ears.processSound(data);
-            new PublishTask(gClient).execute(guesses);
+            new TellPhoneTask(gClient).execute(guesses);
         }
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onStop() {
+        super.onStop();
         // Disconnect from the Google API Client when the activity ends
         gClient.disconnect();
     }
 
-    private GoogleApiClient getGoogleClient() {
+    private GoogleApiClient buildGoogleApiClient() {
+        // Full detail about the Google API Client configuration can be seen here
+        // https://developers.google.com/android/guides/api-client
+        // For the purpose of this tutorial the most important line is the first
+        // one on the build process which is what provides us with the Android
+        // wear API to send data to the phone from the wear device.
         return new GoogleApiClient.Builder(this)
+                // Required the Android Wear API
                 .addApi(Wearable.API)
-                .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks(){
+                .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
                     @Override
                     public void onConnected(Bundle bundle) {
-                        Log.i("VOICE", "Google API Client connected.");
-                        input.setEnabled(true);
+                        micBtn.setEnabled(true);
                     }
 
                     @Override
                     public void onConnectionSuspended(int i) {
-                        Log.i("VOICE", "Google API Client lost connection will try to reconnect");
-                        gClient.connect();
+                        retryToConnectGClient();
                     }
                 })
                 .addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
                     @Override
                     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-                        Log.i("VOICE", "Google API Client was unable to connect");
+                        retryToConnectGClient();
                     }
                 })
                 .build();
+    }
+
+    /**
+     * Attempts to connect the Google API Client and disables the microphone button since
+     * the gClient must be connected in order to send the input data to the phone.
+     */
+    private void retryToConnectGClient() {
+        gClient.connect();
+        micBtn.setEnabled(false);
     }
 }

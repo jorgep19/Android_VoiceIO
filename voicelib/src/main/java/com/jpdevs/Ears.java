@@ -3,6 +3,8 @@ package com.jpdevs;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.speech.RecognizerIntent;
 import android.widget.Toast;
 
@@ -10,11 +12,11 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 public class Ears {
-    public static String MEANING_KEY = "com.jpdevs.Ears.Guess.meaning";
-    public static String CONFIDENCE_KEY = "com.jpdevs.Ears.Guess.confidence";
+    public static final String GUESSES_PATH = "/guesses";
+    public static final String GUESSES_KEY = "com.jpdevs.Ears.guesses";
 
     private static final String DEFAULT_PROMPT = "I'm all ears";
-    private static final String DEFAUL_NO_SUPPORT_MSG = "Unable to receive voice input on this device";
+    private static final String DEFAULT_NO_SUPPORT_MSG = "Unable to receive voice input on this device";
 
     private Locale locale;
     private int code;
@@ -22,7 +24,7 @@ public class Ears {
     private String noVoiceSupportMsg;
 
     public Ears(int code) {
-        this(code, DEFAULT_PROMPT, DEFAUL_NO_SUPPORT_MSG);
+        this(code, DEFAULT_PROMPT, DEFAULT_NO_SUPPORT_MSG);
     }
 
     public Ears(int code, String promptMsg, String noVoiceSupportMsg) {
@@ -73,16 +75,44 @@ public class Ears {
         locale = Locale.FRANCE;
     }
 
-    public static class Guess {
-        String meaning;
-        float confidence;
+    public static class Guess implements Parcelable {
+        public static final String MEANING_KEY = "com.jpdevs.Ears.Guess.meaning";
+        public static final String CONFIDENCE_KEY = "com.jpdevs.Ears.Guess.confidence";
+
+        public static final Creator<Guess> CREATOR = new Creator<Guess>() {
+            @Override
+            public Guess createFromParcel(Parcel in) {
+                return new Guess(in);
+            }
+
+            @Override
+            public Guess[] newArray(int size) {
+                return new Guess[size];
+            }
+        };
+
+        public final String meaning;
+        public final float confidence;
 
         public Guess(String meaning, float confidence) {
             this.meaning = meaning;
             this.confidence = confidence;
         }
 
-        public String getMeaning() { return meaning; }
-        public float getConfidence() { return confidence; }
+        protected Guess(Parcel in) {
+            meaning = in.readString();
+            confidence = in.readFloat();
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeString(meaning);
+            dest.writeFloat(confidence);
+        }
     }
 }

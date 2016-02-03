@@ -66,10 +66,10 @@ public class GuessesAdapter extends RecyclerView.Adapter<GuessesAdapter.ViewHold
         }
 
         public void setItem(Ears.Guess guess) {
-            String confidenceStr = String.format("%.2f", (guess.getConfidence()*100));
-            message = String.format("I'm %s percent sure you said %s", confidenceStr, guess.getMeaning());
+            String confidenceStr = String.format("%.2f", (guess.confidence*100));
+            message = String.format("I'm %s percent sure you said %s", confidenceStr, guess.meaning);
 
-            titleText.setText(guess.getMeaning());
+            titleText.setText(guess.meaning);
             subtitleText.setText(confidenceStr);
         }
     }

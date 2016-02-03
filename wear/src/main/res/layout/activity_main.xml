@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.wearable.view.WatchViewStub
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/watch_view_stub"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:rectLayout="@layout/rect_activity_main"
-    app:roundLayout="@layout/round_activity_main"
+    android:background="@color/colorPrimary"
     tools:context=".MainActivity"
-    tools:deviceIds="wear">
-</android.support.wearable.view.WatchViewStub>
+    tools:deviceIds="wear_round">
+    <ImageButton
+        android:id="@+id/mic_btn"
+        android:src="@drawable/ic_settings_voice_white_48dp"
+        android:background="@drawable/accent_color_circle_btn"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_width="104dp"
+        android:layout_height="104dp"
+        android:contentDescription="@string/input_btn_desc"/>
+</RelativeLayout>
