@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 public class Ears {
+    public static String MEANING_KEY = "com.jpdevs.Ears.Guess.meaning";
+    public static String CONFIDENCE_KEY = "com.jpdevs.Ears.Guess.confidence";
+
     private static final String DEFAULT_PROMPT = "I'm all ears";
     private static final String DEFAUL_NO_SUPPORT_MSG = "Unable to receive voice input on this device";
 

@@ -14,10 +14,8 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.Wearable;
 import com.jpdevs.Ears;
 
-import java.util.Random;
-
 public class MainActivity extends Activity {
-    private static final int SPEECH_REQUEST_CODE = 91;
+    private static final int SPEECH_REQUEST_CODE = 19;
 
     private Ears ears;
     private ImageButton input;
@@ -40,8 +38,7 @@ public class MainActivity extends Activity {
                 input.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-//                        ears.startListening(MainActivity.this);
-                        new PublishTask(gClient).execute(getRandomArray(3));
+                        ears.startListening(MainActivity.this);
                     }
                 });
             }
@@ -51,6 +48,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
+        // Connect to Google API Client when the activity starts
         gClient.connect();
     }
 
@@ -59,17 +57,14 @@ public class MainActivity extends Activity {
         super.onActivityResult(requestCode, resultCode, data);
         if(ears.shouldProcessSound(requestCode, resultCode, data)) {
             Ears.Guess[] guesses = ears.processSound(data);
-
-            Log.i("VOICE", "Got: " + guesses.length);
-            for (Ears.Guess guess : guesses) {
-                Log.i("VOICE", "Got: " + guess.getMeaning());
-            }
+            new PublishTask(gClient).execute(guesses);
         }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        // Disconnect from the Google API Client when the activity ends
         gClient.disconnect();
     }
 
@@ -96,17 +91,5 @@ public class MainActivity extends Activity {
                     }
                 })
                 .build();
-    }
-
-    // TODO delete
-    private String[] getRandomArray(int length) {
-        Random rand = new Random();
-        String[] arr = new String[length];
-
-        for(int i = 0; i < length; ++i) {
-            arr[i] = "Random" + rand.nextInt();
-        }
-
-        return arr;
     }
 }
