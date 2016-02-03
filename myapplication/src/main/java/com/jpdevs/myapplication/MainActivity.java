@@ -13,6 +13,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.Wearable;
 
+import java.util.Random;
+
 public class MainActivity extends Activity {
     private static final int SPEECH_REQUEST_CODE = 91;
 
@@ -38,7 +40,7 @@ public class MainActivity extends Activity {
                     @Override
                     public void onClick(View v) {
 //                        ears.startListening(MainActivity.this);
-                        new PublishTask(gClient).execute("I said something", "I said this", "I");
+                        new PublishTask(gClient).execute(getRandomArray(3));
                     }
                 });
             }
@@ -93,5 +95,17 @@ public class MainActivity extends Activity {
                     }
                 })
                 .build();
+    }
+
+    // TODO delete
+    private String[] getRandomArray(int length) {
+        Random rand = new Random();
+        String[] arr = new String[length];
+
+        for(int i = 0; i < length; ++i) {
+            arr[i] = "Random" + rand.nextInt();
+        }
+
+        return arr;
     }
 }

@@ -28,4 +28,5 @@ dependencies {
     compile 'com.google.android.gms:play-services-wearable:8.4.0'
 
     wearApp project(':myapplication')
+    compile 'com.android.support:support-v4:23.0.0'
 }

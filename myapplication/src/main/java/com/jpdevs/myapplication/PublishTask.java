@@ -4,9 +4,13 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.NodeApi;
+import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 
 public class PublishTask extends AsyncTask<String, Void, Void> {
@@ -23,26 +27,18 @@ public class PublishTask extends AsyncTask<String, Void, Void> {
         NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes(gClient).await();
 
         Log.i("VOICE", "Founds this many nodes: " + nodes.getNodes().size());
-        for (Node node : nodes.getNodes()) {
-            for(int i = 0; i < words.length; ++i) {
-                MessageApi.SendMessageResult result =
-                        Wearable.MessageApi.sendMessage(gClient, node.getId(), "/input/length", convertToBytes(words.length)).await();
-                Log.i("VOICE", "Sent words collection length successfully to " + node.getDisplayName());
-
-                if(result.getStatus().isSuccess()) {
-                    result =
-                            Wearable.MessageApi.sendMessage(gClient, node.getId(), "/input/" + i, words[i].getBytes()).await();
-                    if (result.getStatus().isSuccess()) {
-                        Log.i("VOICE", "Message: {" + words[i] + "} sent to: " + node.getDisplayName());
-                    } else {
-                        Log.i("VOICE", "ERROR: failed to send Message");
-                    }
-                } else {
-                    Log.i("VOICE", "ERROR: failed to send words collection length");
-                }
-            }
+        if(syncWords(words)) {
+//            for (Node node : nodes.getNodes()) {
+//                MessageApi.SendMessageResult result =
+//                    Wearable.MessageApi
+//                        .sendMessage(gClient, node.getId(), "/input/length", intToByteArray(words.length))
+//                        .await();
+//
+//                if (result.getStatus().isSuccess()) {
+//                    Log.i("VOICE", "Sent words collection length successfully to " + node.getDisplayName());
+//                }
+//            }
         }
-
         return null;
     }
 
@@ -59,13 +55,22 @@ public class PublishTask extends AsyncTask<String, Void, Void> {
 //            return data;
 //        }
 
-    public byte[] convertToBytes(int n)
+    private static byte[] intToByteArray(int a)
     {
-        byte[] ret = new byte[4];
-        ret[0] = (byte) (n & 0xFF);
-        ret[1] = (byte) ((n >> 8) & 0xFF);
-        ret[2] = (byte) ((n >> 16) & 0xFF);
-        ret[3] = (byte) ((n >> 24) & 0xFF);
-        return ret;
+        return new byte[] {
+                (byte) ((a >> 24) & 0xFF),
+                (byte) ((a >> 16) & 0xFF),
+                (byte) ((a >> 8) & 0xFF),
+                (byte) (a & 0xFF)
+        };
+    }
+
+    private boolean syncWords(String... words) {
+        PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/words");
+        putDataMapReq.getDataMap().putStringArray("words", words);
+        PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
+        DataApi.DataItemResult result = Wearable.DataApi.putDataItem(gClient,  putDataReq).await();
+
+        return result.getStatus().isSuccess();
     }
 }
