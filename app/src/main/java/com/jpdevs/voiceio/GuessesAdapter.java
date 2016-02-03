@@ -6,6 +6,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.jpdevs.Ears;
+import com.jpdevs.Voice;
+
 public class GuessesAdapter extends RecyclerView.Adapter<GuessesAdapter.ViewHolder> {
     private Ears.Guess[] guesses;
     private Voice voice;

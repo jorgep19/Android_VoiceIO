@@ -1,10 +1,10 @@
-package com.jpdevs.voiceio;
+package com.jpdevs;
 
 import android.app.Activity;
 import android.os.Build;
 import android.speech.tts.TextToSpeech;
-import android.support.design.widget.Snackbar;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.Locale;
 import java.util.Random;
@@ -26,10 +26,10 @@ public class Voice implements TextToSpeech.OnInitListener {
             int result = tts.setLanguage(Locale.US);
 
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                Snackbar.make(
-                        activity.findViewById(android.R.id.content),
+                Toast.makeText(
+                        activity,
                         "This Language is not supported",
-                        Snackbar.LENGTH_SHORT)
+                        Toast.LENGTH_SHORT)
                         .show();
             }
         } else {

@@ -15,8 +15,8 @@ import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.WearableListenerService;
 
-public class GossipService extends WearableListenerService {
-    private final String TAG = GossipService.class.getName();
+public class ListenToWatchService extends WearableListenerService {
+    private final String TAG = ListenToWatchService.class.getName();
 
     @Override
     public void onDataChanged(DataEventBuffer dataEvents) {

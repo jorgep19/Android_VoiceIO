@@ -13,6 +13,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.jpdevs.Ears;
+import com.jpdevs.Voice;
+
 public class MainActivity extends AppCompatActivity {
     private static final int VOICE_INPUT_REQ = 19;
 

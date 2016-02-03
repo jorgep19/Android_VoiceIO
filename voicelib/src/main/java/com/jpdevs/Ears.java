@@ -1,4 +1,4 @@
-package com.jpdevs.myapplication;
+package com.jpdevs;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -10,25 +10,35 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 public class Ears {
+    private static final String DEFAULT_PROMPT = "I'm all ears";
+    private static final String DEFAUL_NO_SUPPORT_MSG = "Unable to receive voice input on this device";
+
     private Locale locale;
     private int code;
+    private String promptMsg;
+    private String noVoiceSupportMsg;
 
-    public Ears(int code){
+    public Ears(int code) {
+        this(code, DEFAULT_PROMPT, DEFAUL_NO_SUPPORT_MSG);
+    }
+
+    public Ears(int code, String promptMsg, String noVoiceSupportMsg) {
         this.code = code;
-        locale = Locale.getDefault();
+        this.promptMsg = promptMsg;
+        this.noVoiceSupportMsg = noVoiceSupportMsg;
+        this.locale = Locale.getDefault();
+
     }
 
     public void startListening(Activity activity) {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, locale);
-        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, activity.getString(R.string.voice_input_prompt));
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, promptMsg);
         try {
             activity.startActivityForResult(intent, code);
         } catch (ActivityNotFoundException a) {
-            Toast.makeText(activity,
-                    activity.getString(R.string.no_support_for_voice),
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, noVoiceSupportMsg, Toast.LENGTH_SHORT).show();
         }
     }
 

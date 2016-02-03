@@ -17,7 +17,7 @@
         </activity>
 
 
-        <service android:name=".GossipService" >
+        <service android:name=".ListenToWatchService" >
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.BIND_LISTENER" />
             </intent-filter>
