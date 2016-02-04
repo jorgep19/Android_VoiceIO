@@ -13,7 +13,7 @@ public class SaySomethingService extends IntentService {
      * Encapsulates the data to start this service placing the the required data in the
      * intent that will start the service.
      *
-     * @param context the context from where the service is getting started
+     * @param context the context from where the service is getting started from
      * @param phrase the phrase that will be read by the phone when the service runs
      */
     public static void start(Context context, String phrase) {

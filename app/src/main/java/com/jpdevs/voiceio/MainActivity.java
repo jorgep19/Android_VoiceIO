@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -16,20 +17,23 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.jpdevs.Ears;
+import com.jpdevs.Ears.Guess;
 import com.jpdevs.Voice;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
     private static final int VOICE_INPUT_REQ = 19;
-
 
     private static final int START_REQ = 21;
     private static final String NOTIFICATION_ID_KEY  = "com.jpdevs.voiceio.notificationId";
     private static final String GUESSES_DATA_KEY = "com.jpdevs.voiceio.MainActivity";
 
+    private static final String GUESSES_STATE = "com.jpdevs.voiceio.MainActivity.state.guesses";
+
     public static PendingIntent getStartPendingIntent(
-            Context context, int notificationId, ArrayList<Ears.Guess> guesses) {
+            Context context, int notificationId, ArrayList<Guess> guesses) {
 
         Intent intent = new Intent(context, MainActivity.class);
         intent.putExtra(NOTIFICATION_ID_KEY, notificationId);
@@ -65,6 +69,36 @@ public class MainActivity extends AppCompatActivity {
         guessList.setLayoutManager(layoutManager);
         adapter = new GuessesAdapter(voice);
         guessList.setAdapter(adapter);
+    }
+
+    @Override
+    protected void onRestoreInstanceState (Bundle savedInstanceState) {
+         if (savedInstanceState != null) {
+            ArrayList<Guess> guesses = savedInstanceState.getParcelableArrayList(GUESSES_STATE);
+            if(guesses != null) {
+                adapter.setGuesses(guesses.toArray(new Guess[guesses.size()]));
+            }
+        }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        Intent startIntent = getIntent();
+        if(startIntent != null) {
+            int notificationId = startIntent.getIntExtra(NOTIFICATION_ID_KEY, 0);
+            ArrayList<Guess> guesses = startIntent.getParcelableArrayListExtra(GUESSES_DATA_KEY);
+
+            if(notificationId != 0) {
+                NotificationManagerCompat notManager = NotificationManagerCompat.from(this);
+                notManager.cancel(notificationId);
+            }
+
+            if(guesses != null) {
+                adapter.setGuesses(guesses.toArray(new Guess[guesses.size()]));
+            }
+        }
     }
 
     @Override
@@ -106,6 +140,13 @@ public class MainActivity extends AppCompatActivity {
         if(ears.shouldProcessSound(requestCode, resultCode, data)) {
             adapter.setGuesses(ears.processSound(data));
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState (Bundle outState) {
+        Guess[] guesses = adapter.getGuesses();
+        ArrayList<Guess> guessesList = new ArrayList<>(Arrays.asList(guesses));
+        outState.putParcelableArrayList(GUESSES_STATE, guessesList);
     }
 
     @Override

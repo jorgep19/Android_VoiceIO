@@ -12,12 +12,12 @@ import java.util.Random;
 public class Voice implements TextToSpeech.OnInitListener {
     private final String TAG = Voice.class.getName();
 
-    private Context activity;
+    private Context context;
     private TextToSpeech tts;
 
     public Voice(Context context) {
-        this.activity = context;
-        tts = new TextToSpeech(this.activity, this);
+        this.context = context;
+        tts = new TextToSpeech(this.context, this);
     }
 
     @Override
@@ -27,7 +27,7 @@ public class Voice implements TextToSpeech.OnInitListener {
 
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 Toast.makeText(
-                        activity,
+                        context,
                         "This Language is not supported",
                         Toast.LENGTH_SHORT)
                         .show();
@@ -54,6 +54,6 @@ public class Voice implements TextToSpeech.OnInitListener {
             tts.shutdown();
         }
 
-        activity = null;
+        context = null;
     }
 }

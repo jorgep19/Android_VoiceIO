@@ -11,11 +11,9 @@
         <activity android:name=".MainActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
 
         <!-- Service to process data received from the wearable device-->
         <service android:name=".ListenToWatchService" >
@@ -24,6 +22,12 @@
             </intent-filter>
         </service>
 
+        <!-- Broadcast Receiver to start the SaySomethingService from a notification -->
+        <receiver android:name=".SaySomethingBroadcastReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="com.jpdevs.voiceio.SaySomethingBroadcastReceiver.Action"/>
+            </intent-filter>
+        </receiver>
         <!-- Service to make the phone say something when the app is not on the foreground -->
         <service
             android:name=".SaySomethingService"

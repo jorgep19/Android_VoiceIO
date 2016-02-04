@@ -9,6 +9,10 @@ import android.widget.TextView;
 import com.jpdevs.Ears;
 import com.jpdevs.Voice;
 
+/**
+ * A custom implementation of a RecyclerView adapter for more detail check:
+ * http://developer.android.com/training/material/lists-cards.html
+ */
 public class GuessesAdapter extends RecyclerView.Adapter<GuessesAdapter.ViewHolder> {
     private Ears.Guess[] guesses;
     private Voice voice;
@@ -41,6 +45,10 @@ public class GuessesAdapter extends RecyclerView.Adapter<GuessesAdapter.ViewHold
         notifyDataSetChanged();
     }
 
+    public Ears.Guess[] getGuesses() {
+        return guesses;
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder
         implements View.OnClickListener {
         private Voice voice;
@@ -57,7 +65,6 @@ public class GuessesAdapter extends RecyclerView.Adapter<GuessesAdapter.ViewHold
             titleText = (TextView) root.findViewById(R.id.meaning_text);
             subtitleText = (TextView) root.findViewById(R.id.confidence_text);
             root.findViewById(R.id.readBtn).setOnClickListener(this);
-
         }
 
         @Override
