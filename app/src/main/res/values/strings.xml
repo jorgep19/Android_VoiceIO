@@ -9,7 +9,6 @@
     <string name="notification_title">Your watch told me you said something</string>
     <string name="notification_subtitle">:)</string>
 
-    <string name="read_action">Read Top Guess</string>
     <string name="show_action">Show Guesses</string>
 
     <string name="spanish">Spanish</string>

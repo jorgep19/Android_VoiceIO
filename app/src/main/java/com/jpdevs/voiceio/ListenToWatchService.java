@@ -2,7 +2,6 @@ package com.jpdevs.voiceio;
 
 import android.app.Notification;
 import android.app.PendingIntent;
-import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 
@@ -81,9 +80,6 @@ public class ListenToWatchService extends WearableListenerService {
             .setContentIntent(showIntent)
             // Set the expanded content
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(getWordsStr(guesses)))
-            // setup read action
-            .addAction(R.drawable.ic_record_voice_over_white_24dp, getString(R.string.read_action),
-                       createReadIntent(guesses.get(0)))
             // add show action
             .addAction(R.drawable.ic_remove_red_eye_white_24dp, getString(R.string.show_action),
                     showIntent);
@@ -110,21 +106,6 @@ public class ListenToWatchService extends WearableListenerService {
         }
 
         return sb.toString();
-    }
-
-    /**
-     * Creates a pending intent that will send a signal to the SaySomethingBroadcastReceiver which
-     * will then activate the SaySomethingService so the phone reads the phrase sent to it.
-     *
-     * @param guess the guess that will be used to create phrase that the phone will read
-     * @return a pending intent will signal the SaySomethingBroadcastReceiver to start the
-     *         SaySomethingService
-     */
-    private PendingIntent createReadIntent(Guess guess) {
-        String phrase = guess.meaning;
-        Intent intent = SaySomethingBroadcastReceiver.getSaySignalIntent(this, phrase);
-
-        return PendingIntent.getBroadcast(this, SaySomethingBroadcastReceiver.REQ_CODE, intent, 0);
     }
 
     /**

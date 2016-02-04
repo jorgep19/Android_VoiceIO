@@ -73,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onRestoreInstanceState (Bundle savedInstanceState) {
+        // Restore the guesses we where showing when appropriate
          if (savedInstanceState != null) {
             ArrayList<Guess> guesses = savedInstanceState.getParcelableArrayList(GUESSES_STATE);
             if(guesses != null) {
