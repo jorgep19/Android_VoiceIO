@@ -17,11 +17,17 @@
         </activity>
 
 
+        <!-- Service to process data received from the wearable device-->
         <service android:name=".ListenToWatchService" >
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.BIND_LISTENER" />
             </intent-filter>
         </service>
+
+        <!-- Service to make the phone say something when the app is not on the foreground -->
+        <service
+            android:name=".SaySomethingService"
+            android:exported="false"/>
     </application>
 
 </manifest>

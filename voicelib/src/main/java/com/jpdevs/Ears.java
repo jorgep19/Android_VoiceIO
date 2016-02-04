@@ -114,5 +114,10 @@ public class Ears {
             dest.writeString(meaning);
             dest.writeFloat(confidence);
         }
+
+        @Override
+        public String toString() {
+            return String.format("%s - %.2f", meaning, confidence);
+        }
     }
 }

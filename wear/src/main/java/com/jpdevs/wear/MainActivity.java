@@ -12,6 +12,8 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.Wearable;
 import com.jpdevs.Ears;
 
+import java.util.Random;
+
 public class MainActivity extends Activity {
     private static final int SPEECH_REQUEST_CODE = 19;
 
@@ -32,7 +34,12 @@ public class MainActivity extends Activity {
         micBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ears.startListening(MainActivity.this);
+//                ears.startListening(MainActivity.this);
+                Random rand = new Random();
+                new TellPhoneTask(gClient)
+                    .execute(new Ears.Guess("1", rand.nextFloat()),
+                             new Ears.Guess("2", rand.nextFloat()),
+                             new Ears.Guess("3", rand.nextFloat()));
             }
         });
 
@@ -49,6 +56,13 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        // Disconnect from the Google API Client when the activity ends
+        gClient.disconnect();
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
@@ -58,13 +72,6 @@ public class MainActivity extends Activity {
             Ears.Guess[] guesses = ears.processSound(data);
             new TellPhoneTask(gClient).execute(guesses);
         }
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        // Disconnect from the Google API Client when the activity ends
-        gClient.disconnect();
     }
 
     private GoogleApiClient buildGoogleApiClient() {

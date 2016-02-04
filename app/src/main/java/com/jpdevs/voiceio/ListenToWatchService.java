@@ -1,11 +1,10 @@
 package com.jpdevs.voiceio;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
@@ -18,28 +17,41 @@ import com.jpdevs.Ears.Guess;
 
 import java.util.ArrayList;
 
+/**
+ * This class is the Service that listens for data coming from full details are available here:
+ * http://developer.android.com/training/wearables/data-layer/data-items.html
+ */
 public class ListenToWatchService extends WearableListenerService {
-
     @Override
     public void onDataChanged(DataEventBuffer dataEvents) {
         for (DataEvent event : dataEvents) {
+            // When there is an event of data being changed
             if (event.getType() == DataEvent.TYPE_CHANGED) {
-                // DataItem changed
+                // Get the event and verify the is the Guess path that we are expecting
                 DataItem item = event.getDataItem();
                 if (item.getUri().getPath().compareTo(Ears.GUESSES_PATH) == 0) {
+                    // Create Guess objects from the data in the item that was changed
                     DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
+                    ArrayList<Guess> guesses = parseGuessesDataMap(dataMap);
 
-                    ArrayList<Guess> words = parseGuessesDataMap(dataMap);
-                    showNotification(words);
+                    showNotification(guesses);
                 }
             }
         }
     }
 
+    /**
+     * Parses a DataMap with the appropriate data to create a collection of Guess objects.
+     *
+     * @param dataMap contains an DataMap ArrayList in under the key Ears.GUESSES_KEY with the
+     *                data for watch's guesses
+     * @return an ArrayList of Guess object created with the data fetch from the DataMap
+     */
     private ArrayList<Guess> parseGuessesDataMap(DataMap dataMap) {
         ArrayList<DataMap> guessesData = dataMap.getDataMapArrayList(Ears.GUESSES_KEY);
         ArrayList<Guess> guesses = new ArrayList<>(guessesData.size());
 
+        // Map the data from each data
         for(DataMap data: guessesData) {
             String meaning = data.getString(Guess.MEANING_KEY);
             float confidence = data.getFloat(Guess.CONFIDENCE_KEY);
@@ -50,23 +62,46 @@ public class ListenToWatchService extends WearableListenerService {
         return guesses;
     }
 
-    private void showNotification(ArrayList<Guess>  words) {
+    /**
+     * Create a expandable notification with the guesses data and show it on the phone
+     *
+     * @param guesses a collection of Guess objects that will be display on the notification
+     *                and send to the MainActivity if the notification is clicked.
+     */
+    private void showNotification(ArrayList<Guess>  guesses) {
+        int notificationId = 19;
+        NotificationManagerCompat mNotificationManager = NotificationManagerCompat.from(this);
+        PendingIntent showIntent = createShowIntent(notificationId, guesses);
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_settings_voice_white_24dp)
-                        .setContentTitle("Your watch told me you said:")
-                        .setContentText(":)")
-                        .setDefaults(Notification.DEFAULT_ALL)
-                        .setStyle(new NotificationCompat.BigTextStyle().bigText(getWordsStr(words)))
-                        .addAction(R.drawable.ic_record_voice_over_black_24dp,
-                                "Show", createShowNotification(words));
+            .setSmallIcon(R.drawable.ic_settings_voice_white_24dp)
+            .setContentTitle(getString(R.string.notification_title))
+            .setContentText(getString(R.string.notification_subtitle))
+            .setDefaults(Notification.DEFAULT_ALL)
+            .setContentIntent(showIntent)
+            // Set the expanded content
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(getWordsStr(guesses)))
+            // setup read action
+            .addAction(R.drawable.ic_record_voice_over_white_24dp, getString(R.string.read_action),
+                       createReadIntent(guesses.get(0)))
+            // add show action
+            .addAction(R.drawable.ic_remove_red_eye_white_24dp, getString(R.string.show_action),
+                    showIntent);
 
-
-
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.notify(19, builder.build());
+        // display the notification
+        mNotificationManager.notify(notificationId, builder.build());
     }
 
+    /**
+     * Creates a String representation of a collection of Guess objects
+     *
+     * @param guesses a collection of Guess objects
+     * @return a string representation of the form shown below:
+     *         "* guess1.toString()
+     *          * guess2.toString()
+     *          * guess3.toString()
+     *          ...."
+     */
     private String getWordsStr(ArrayList<Guess> guesses) {
         StringBuilder sb = new StringBuilder();
 
@@ -77,12 +112,30 @@ public class ListenToWatchService extends WearableListenerService {
         return sb.toString();
     }
 
-    private PendingIntent createShowNotification(ArrayList<Guess>  guesses) {
-        Intent resultIntent = new Intent(this, MainActivity.class);
-        resultIntent.putParcelableArrayListExtra("words", guesses);
-        resultIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
-                Intent.FLAG_ACTIVITY_CLEAR_TASK);
+    /**
+     * Creates a pending intent that will send a signal to the SaySomethingBroadcastReceiver which
+     * will then activate the SaySomethingService so the phone reads the phrase sent to it.
+     *
+     * @param guess the guess that will be used to create phrase that the phone will read
+     * @return a pending intent will signal the SaySomethingBroadcastReceiver to start the
+     *         SaySomethingService
+     */
+    private PendingIntent createReadIntent(Guess guess) {
+        String phrase = guess.meaning;
+        Intent intent = SaySomethingBroadcastReceiver.getSaySignalIntent(this, phrase);
 
-        return PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntent.getBroadcast(this, SaySomethingBroadcastReceiver.REQ_CODE, intent, 0);
+    }
+
+    /**
+     * Creates a pending intent that will open the MainActivity to show the guesses passed in
+     *
+     * @param notificationId the id of the notification that will open the MainActivity
+     * @param guesses a collection guesses that will be passed to the MainActivity
+     * @return a pending intent that will open the MainActivity giving it guesses data to
+     *         display on the list
+     */
+    private PendingIntent createShowIntent(int notificationId, ArrayList<Guess> guesses) {
+        return MainActivity.getStartPendingIntent(this, notificationId, guesses);
     }
 }

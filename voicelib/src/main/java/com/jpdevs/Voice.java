@@ -1,6 +1,6 @@
 package com.jpdevs;
 
-import android.app.Activity;
+import android.content.Context;
 import android.os.Build;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
@@ -12,10 +12,10 @@ import java.util.Random;
 public class Voice implements TextToSpeech.OnInitListener {
     private final String TAG = Voice.class.getName();
 
-    private Activity activity;
+    private Context activity;
     private TextToSpeech tts;
 
-    public Voice(Activity context) {
+    public Voice(Context context) {
         this.activity = context;
         tts = new TextToSpeech(this.activity, this);
     }

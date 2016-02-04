@@ -1,6 +1,8 @@
 package com.jpdevs.voiceio;
 
 import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -16,8 +18,24 @@ import android.view.View;
 import com.jpdevs.Ears;
 import com.jpdevs.Voice;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity {
     private static final int VOICE_INPUT_REQ = 19;
+
+
+    private static final int START_REQ = 21;
+    private static final String NOTIFICATION_ID_KEY  = "com.jpdevs.voiceio.notificationId";
+    private static final String GUESSES_DATA_KEY = "com.jpdevs.voiceio.MainActivity";
+
+    public static PendingIntent getStartPendingIntent(
+            Context context, int notificationId, ArrayList<Ears.Guess> guesses) {
+
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.putExtra(NOTIFICATION_ID_KEY, notificationId);
+        intent.putExtra(GUESSES_DATA_KEY, guesses);
+        return PendingIntent.getActivity(context, START_REQ, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+    }
 
     private Voice voice;
     private Ears ears;
