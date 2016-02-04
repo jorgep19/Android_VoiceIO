@@ -86,16 +86,19 @@ public class MainActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
 
+        // When starting from a intent with guess and notification id data process the data received
         Intent startIntent = getIntent();
         if(startIntent != null) {
             int notificationId = startIntent.getIntExtra(NOTIFICATION_ID_KEY, 0);
             ArrayList<Guess> guesses = startIntent.getParcelableArrayListExtra(GUESSES_DATA_KEY);
 
+            // when there is a notificationId passed in dismiss the notification
             if(notificationId != 0) {
                 NotificationManagerCompat notManager = NotificationManagerCompat.from(this);
                 notManager.cancel(notificationId);
             }
 
+            // when there is guesses data display them by passing them to our adapter
             if(guesses != null) {
                 adapter.setGuesses(guesses.toArray(new Guess[guesses.size()]));
             }
@@ -111,6 +114,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        // Based on the language picked by the user see our ears to listen for
+        // the appropriate language
         String language;
         switch (item.getItemId()) {
             case R.id.spanish_item:
@@ -132,12 +137,16 @@ public class MainActivity extends AppCompatActivity {
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.speakFab);
         Snackbar.make(fab, String.format("Set language to: %s.", language), Snackbar.LENGTH_LONG)
             .show();
+
         return true;
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        // When receiving an activity result that our ears know should be processed then display
+        // our guesses on the list
         if(ears.shouldProcessSound(requestCode, resultCode, data)) {
             adapter.setGuesses(ears.processSound(data));
         }
@@ -145,13 +154,17 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onSaveInstanceState (Bundle outState) {
+        // save guesses data when if needed
         Guess[] guesses = adapter.getGuesses();
-        ArrayList<Guess> guessesList = new ArrayList<>(Arrays.asList(guesses));
-        outState.putParcelableArrayList(GUESSES_STATE, guessesList);
+        if(guesses.length > 0) {
+            ArrayList<Guess> guessesList = new ArrayList<>(Arrays.asList(guesses));
+            outState.putParcelableArrayList(GUESSES_STATE, guessesList);
+        }
     }
 
     @Override
     public void onDestroy() {
+        // tell the voice object to clean up
         voice.onDestroy();
         super.onDestroy();
     }
