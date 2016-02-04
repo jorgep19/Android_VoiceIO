@@ -32,6 +32,15 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String GUESSES_STATE = "com.jpdevs.voiceio.MainActivity.state.guesses";
 
+    /**
+     *  This method encapsulates the logic for starting the Main Activity
+     *
+     * @param context the context from which the activity is being invoked
+     * @param notificationId the id of the notification that will start the activity so that
+     *                       it can be dismissed
+     * @param guesses guesses data that will be shown on a list when the activity starts
+     * @return a pending intent with all the data that the MainActivity will expect when starting
+     */
     public static PendingIntent getStartPendingIntent(
             Context context, int notificationId, ArrayList<Guess> guesses) {
 
@@ -121,14 +130,17 @@ public class MainActivity extends AppCompatActivity {
             case R.id.spanish_item:
                 language = getString(R.string.spanish);
                 ears.setToSpanish();
+                voice.setToSpanish();
                 break;
             case R.id.english_item:
                 language = getString(R.string.english);
                 ears.setToEnglish();
+                voice.setToEnglish();
                 break;
             case R.id.french_item:
                 language = getString(R.string.french);
                 ears.setToFrench();
+                voice.setToFrench();
                 break;
             default:
                 return super.onOptionsItemSelected(item);

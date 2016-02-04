@@ -14,17 +14,21 @@ public class Voice implements TextToSpeech.OnInitListener {
 
     private Context context;
     private TextToSpeech tts;
+    private Locale locale;
 
     public Voice(Context context) {
         this.context = context;
         tts = new TextToSpeech(this.context, this);
+        locale = Locale.getDefault();
     }
 
     @Override
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
-            int result = tts.setLanguage(Locale.US);
+            // set the reading language
+            int result = tts.setLanguage(locale);
 
+            // manage cases when the language is not supported
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 Toast.makeText(
                         context,
@@ -33,21 +37,15 @@ public class Voice implements TextToSpeech.OnInitListener {
                         .show();
             }
         } else {
-            Log.e(TAG, "TTS Initialization Failed!");
+            // log any initialization problems that could come from the TextToSpeech object
+            Log.e(TAG, "TTS Initialization Failed! Status: " + status);
         }
     }
 
-    public void say(String text, boolean shouldSayNow) {
-        int queueMode = shouldSayNow ? TextToSpeech.QUEUE_FLUSH : TextToSpeech.QUEUE_ADD;
-        String reqId = String.valueOf(new Random().nextLong());
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            tts.speak(text, queueMode, null, reqId);
-        } else {
-            tts.speak(text, queueMode, null);
-        }
-    }
-
+    /**
+     * Cleanup method to release the TextToSpeech resource and release the context object to avoid
+     * memory leaks
+     */
     public void onDestroy() {
         if (tts != null) {
             tts.stop();
@@ -55,5 +53,45 @@ public class Voice implements TextToSpeech.OnInitListener {
         }
 
         context = null;
+    }
+
+    /**
+     * Will make the phone read the phrase passed in through the speakers
+     *
+     * @param phrase what the phone will read
+     * @param shouldSayNow if phrase passed should be said right now stopping anything being said
+     *                     through the phone speakers or if should be queue to be said
+     *                     when appropriate
+     */
+    public void say(String phrase, boolean shouldSayNow) {
+        int queueMode = shouldSayNow ? TextToSpeech.QUEUE_FLUSH : TextToSpeech.QUEUE_ADD;
+        String reqId = String.valueOf(new Random().nextLong());
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            tts.speak(phrase, queueMode, null, reqId);
+        } else {
+            tts.speak(phrase, queueMode, null);
+        }
+    }
+
+    /**
+     * Sets the locale for which the voice input will be parsed to American English
+     */
+    public void setToEnglish() {
+        locale = Locale.US;
+    }
+
+    /**
+     * Sets the locale for which the voice input will be parsed to Spanish
+     */
+    public void setToSpanish() {
+        locale = new Locale("es", "ES");
+    }
+
+    /**
+     * Sets the locale for which the voice input will be parsed to French
+     */
+    public void setToFrench() {
+        locale = Locale.FRANCE;
     }
 }
