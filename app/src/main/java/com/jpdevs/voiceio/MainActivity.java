@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String GUESSES_STATE = "com.jpdevs.voiceio.MainActivity.state.guesses";
     private static final String LANG_STATE = "com.jpdevs.voiceio.MainActivity.state.language";
-    private static final String SPEED_STATE = "com.jpdevs.voiceio.MainActivity.state.pitch";
+    private static final String SPEED_STATE = "com.jpdevs.voiceio.MainActivity.state.speech";
     private static final String PITCH_STATE = "com.jpdevs.voiceio.MainActivity.state.pitch";
 
     /**
@@ -61,6 +61,8 @@ public class MainActivity extends AppCompatActivity {
     private Voice voice;
     private Ears ears;
     private GuessesAdapter adapter;
+    private int voiceSpeed;
+    private int voicePitch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,7 +99,8 @@ public class MainActivity extends AppCompatActivity {
 
         // setup pitch and speed spinner
         Spinner speedSpinner = (Spinner) findViewById(R.id.speed_spinner);
-        setupSimpleSpinner(speedSpinner, R.array.voice_speed_array, new OnItemSelectedListener() {
+        voiceSpeed = 1;
+        setupSimpleSpinner(speedSpinner, R.array.voice_speed_array, voiceSpeed, new OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 setVoiceSpeed(position);
@@ -107,7 +110,8 @@ public class MainActivity extends AppCompatActivity {
             public void onNothingSelected(AdapterView<?> parent) {}
         });
         Spinner pitchSpinner = (Spinner) findViewById(R.id.pitch_spinner);
-        setupSimpleSpinner(pitchSpinner, R.array.voice_pitch_array, new OnItemSelectedListener() {
+        voicePitch = 2;
+        setupSimpleSpinner(pitchSpinner, R.array.voice_pitch_array, voicePitch, new OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 setVoicePitch(position);
@@ -116,17 +120,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onNothingSelected(AdapterView<?> parent) {}
         });
-    }
-
-    @Override
-    protected void onRestoreInstanceState (Bundle savedInstanceState) {
-        // Restore the guesses we where showing when appropriate
-         if (savedInstanceState != null) {
-            ArrayList<Guess> guesses = savedInstanceState.getParcelableArrayList(GUESSES_STATE);
-            if(guesses != null) {
-                adapter.setGuesses(guesses.toArray(new Guess[guesses.size()]));
-            }
-        }
     }
 
     @Override
@@ -149,6 +142,24 @@ public class MainActivity extends AppCompatActivity {
             if(guesses != null) {
                 adapter.setGuesses(guesses.toArray(new Guess[guesses.size()]));
             }
+        }
+    }
+
+    @Override
+    protected void onRestoreInstanceState (Bundle savedInstanceState) {
+        // Restore the guesses we where showing when appropriate
+        if (savedInstanceState != null) {
+            // restore the guess list being displayed
+            ArrayList<Guess> guesses = savedInstanceState.getParcelableArrayList(GUESSES_STATE);
+            if(guesses != null) {
+                adapter.setGuesses(guesses.toArray(new Guess[guesses.size()]));
+            }
+
+            // Place the spinners back on selected values
+            Spinner speedSpinner = (Spinner) findViewById(R.id.speed_spinner);
+            speedSpinner.setSelection(savedInstanceState.getInt(PITCH_STATE));
+            Spinner pitchSpinner = (Spinner) findViewById(R.id.pitch_spinner);
+            pitchSpinner.setSelection(savedInstanceState.getInt(SPEED_STATE));
         }
     }
 
@@ -208,6 +219,9 @@ public class MainActivity extends AppCompatActivity {
             ArrayList<Guess> guessesList = new ArrayList<>(Arrays.asList(guesses));
             outState.putParcelableArrayList(GUESSES_STATE, guessesList);
         }
+
+        outState.putInt(SPEED_STATE, voiceSpeed);
+        outState.putInt(PITCH_STATE, voicePitch);
     }
 
     @Override
@@ -221,16 +235,22 @@ public class MainActivity extends AppCompatActivity {
      * For more details check
      * http://developer.android.com/guide/topics/ui/controls/spinner.html
      * @param spinner
+     * @param data
+     * @param startingPosition
+     * @param listener
      */
-    private void setupSimpleSpinner(Spinner spinner, @ArrayRes int data, OnItemSelectedListener listener) {
+    private void setupSimpleSpinner(
+            Spinner spinner, @ArrayRes int data, int startingPosition, OnItemSelectedListener listener) {
         ArrayAdapter<CharSequence> adapter = ArrayAdapter
                 .createFromResource(this, data, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(listener);
+        spinner.setSelection(startingPosition);
     }
 
     private void setVoicePitch(int position) {
+        voicePitch = position;
         Voice.Pitch pitch;
 
         switch (position) {
@@ -257,8 +277,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setVoiceSpeed(int position) {
-        Voice.Speed pitch;
+        voiceSpeed = position;
 
+        Voice.Speed pitch;
         switch (position) {
             case 0:
                 pitch = Voice.Speed.HALF;
