@@ -1,18 +1,22 @@
 package com.jpdevs;
 
 import android.app.Activity;
-import android.app.Application;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.speech.RecognizerIntent;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 
+
+/**
+ * Helper class that encapsulates the logic for prompting and processing voice input.
+ */
 public class Ears {
     public static final String GUESSES_PATH = "/guesses";
     public static final String GUESSES_KEY = "com.jpdevs.Ears.guesses";
@@ -24,6 +28,7 @@ public class Ears {
     private Locale locale;
     private String promptMsg;
     private String noVoiceSupportMsg;
+    private List<SoundsProcessedListener> listeners;
 
     public Ears(int code) {
         this(code, DEFAULT_PROMPT, DEFAULT_NO_SUPPORT_MSG);
@@ -34,7 +39,7 @@ public class Ears {
         this.promptMsg = promptMsg;
         this.noVoiceSupportMsg = noVoiceSupportMsg;
         this.locale = Locale.getDefault();
-
+        this.listeners = new LinkedList<>();
     }
 
     /**
@@ -57,35 +62,22 @@ public class Ears {
     }
 
     /**
-     * Should be call from the onActivityResult of the activity that is using this Ears object to
-     * verify if the result is the one expected from the voice input
-     *
-     * @param requestCode the activity result's request code
-     * @param resultCode the activity result's result code
-     * @param data the activity result's intent
-     * @return true if the parameters passed in determined that the result should be
-     *         processed for voice input, false otherwise
-     */
-    public boolean shouldProcessSound(int requestCode, int resultCode, Intent data) {
-        return code == requestCode && resultCode == Activity.RESULT_OK && null != data;
-    }
-
-    /**
      * Parses the intent received back from the Android Speech Recognizer into Guess objects
      *
      * @param data the intent received back from the Android Speech Recognizer
-     * @return an array of Guess objects created with the data from the intent passed in
      */
-    public Guess[] processSound(Intent data) {
-        ArrayList<String> strings = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-        float[] confidences = data.getFloatArrayExtra(RecognizerIntent.EXTRA_CONFIDENCE_SCORES);
+    public void processSound(int requestCode, int resultCode, Intent data) {
+        if(shouldProcessSound(requestCode, resultCode, data)) {
+            ArrayList<String> strings = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+            float[] confidences = data.getFloatArrayExtra(RecognizerIntent.EXTRA_CONFIDENCE_SCORES);
 
-        Guess[] guesses = new Guess[strings.size()];
-        for(int i = 0; i < guesses.length; ++i) {
-            guesses[i] = new Guess(strings.get(i), confidences[i]);
+            Guess[] guesses = new Guess[strings.size()];
+            for(int i = 0; i < guesses.length; ++i) {
+                guesses[i] = new Guess(strings.get(i), confidences[i]);
+            }
+
+            notifyListeners(guesses);
         }
-
-        return guesses;
     }
 
     /**
@@ -107,6 +99,46 @@ public class Ears {
      */
     public void setToFrench() {
         locale = Locale.FRANCE;
+    }
+
+    /**
+     * Add listener that will receive the guess for voice input processed
+     * @param listener the listener to be added
+     */
+    public void addListener(SoundsProcessedListener listener)  {
+        listeners.add(listener);
+    }
+
+    /**
+     * Removes a previously added listener
+     * @param listener the listener to be removed
+     */
+    public void removeListener(SoundsProcessedListener listener) {
+        listeners.remove(listener);
+    }
+
+    /**
+     * Should be call from the onActivityResult of the activity that is using this Ears object to
+     * verify if the result is the one expected from the voice input
+     *
+     * @param requestCode the activity result's request code
+     * @param resultCode the activity result's result code
+     * @param data the activity result's intent
+     * @return true if the parameters passed in determined that the result should be
+     *         processed for voice input, false otherwise
+     */
+    private boolean shouldProcessSound(int requestCode, int resultCode, Intent data) {
+        return code == requestCode && resultCode == Activity.RESULT_OK && null != data;
+    }
+
+    private void notifyListeners(Guess[] guesses) {
+        for(SoundsProcessedListener l : listeners) {
+            l.onSoundProcessed(guesses);
+        }
+    }
+
+    public interface SoundsProcessedListener {
+        void onSoundProcessed(Guess[] guesses);
     }
 
     public static class Guess implements Parcelable {

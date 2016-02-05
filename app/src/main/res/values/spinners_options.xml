@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="voice_speed_array">
+        <item>Talk Slow</item>
+        <item>Talk Normal</item>
+        <item>Talk Fast</item>
+        <item>Talk Very Fast</item>
+    </string-array>
+
+    <string-array name="voice_pitch_array">
+        <item>Very Low Pitch</item>
+        <item>Low Pitch</item>
+        <item>Normal Pitch</item>
+        <item>High Pitch</item>
+        <item>Very High Pitch</item>
+    </string-array>
+</resources>

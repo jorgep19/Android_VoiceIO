@@ -26,7 +26,16 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Create our Ears object and setup the listener for the behavior we want whenever
+        // voice input is processed
         ears = new Ears(SPEECH_REQUEST_CODE);
+        ears.addListener(new Ears.SoundsProcessedListener() {
+            @Override
+            public void onSoundProcessed(Ears.Guess[] guesses) {
+                new TellPhoneTask(gClient).execute(guesses);
+            }
+        });
+
         gClient = buildGoogleApiClient();
 
         // Setup microphone button behavior
@@ -66,12 +75,9 @@ public class MainActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        // If our watch ears detect a sound that should be processed we will process the sound
-        // to get our guesses and then send this data to the phone through out custom AsyncTask
-        if(ears.shouldProcessSound(requestCode, resultCode, data)) {
-            Ears.Guess[] guesses = ears.processSound(data);
-            new TellPhoneTask(gClient).execute(guesses);
-        }
+        // When receiving an activity result pass it to our ears so that
+        // they process the sounds when appropriate
+        ears.processSound(requestCode, resultCode, data);
     }
 
     private GoogleApiClient buildGoogleApiClient() {

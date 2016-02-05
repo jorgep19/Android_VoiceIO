@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.ArrayRes;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.NotificationManagerCompat;
@@ -15,6 +16,10 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 
 import com.jpdevs.Ears;
 import com.jpdevs.Ears.Guess;
@@ -31,6 +36,9 @@ public class MainActivity extends AppCompatActivity {
     private static final String GUESSES_DATA_KEY = "com.jpdevs.voiceio.MainActivity";
 
     private static final String GUESSES_STATE = "com.jpdevs.voiceio.MainActivity.state.guesses";
+    private static final String LANG_STATE = "com.jpdevs.voiceio.MainActivity.state.language";
+    private static final String SPEED_STATE = "com.jpdevs.voiceio.MainActivity.state.pitch";
+    private static final String PITCH_STATE = "com.jpdevs.voiceio.MainActivity.state.pitch";
 
     /**
      *  This method encapsulates the logic for starting the Main Activity
@@ -59,8 +67,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ears = new Ears(VOICE_INPUT_REQ);
         voice = new Voice(this);
+        // Create our Ears object and setup the listener for the behavior we want whenever
+        // voice input is processed
+        ears = new Ears(VOICE_INPUT_REQ);
+        ears.addListener(new Ears.SoundsProcessedListener() {
+            @Override
+            public void onSoundProcessed(Guess[] guesses) {
+                adapter.setGuesses(guesses);
+            }
+        });
 
         // setup voice button
         FloatingActionButton inputFab = (FloatingActionButton) findViewById(R.id.speakFab);
@@ -78,6 +94,28 @@ public class MainActivity extends AppCompatActivity {
         guessList.setLayoutManager(layoutManager);
         adapter = new GuessesAdapter(voice);
         guessList.setAdapter(adapter);
+
+        // setup pitch and speed spinner
+        Spinner speedSpinner = (Spinner) findViewById(R.id.speed_spinner);
+        setupSimpleSpinner(speedSpinner, R.array.voice_speed_array, new OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                setVoiceSpeed(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+        Spinner pitchSpinner = (Spinner) findViewById(R.id.pitch_spinner);
+        setupSimpleSpinner(pitchSpinner, R.array.voice_pitch_array, new OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                setVoicePitch(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
     }
 
     @Override
@@ -157,11 +195,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        // When receiving an activity result that our ears know should be processed then display
-        // our guesses on the list
-        if(ears.shouldProcessSound(requestCode, resultCode, data)) {
-            adapter.setGuesses(ears.processSound(data));
-        }
+        // When receiving an activity result pass it to our ears so that
+        // they process the sounds when appropriate
+        ears.processSound(requestCode, resultCode, data);
     }
 
     @Override
@@ -179,5 +215,67 @@ public class MainActivity extends AppCompatActivity {
         // tell the voice object to clean up
         voice.onDestroy();
         super.onDestroy();
+    }
+
+    /**
+     * For more details check
+     * http://developer.android.com/guide/topics/ui/controls/spinner.html
+     * @param spinner
+     */
+    private void setupSimpleSpinner(Spinner spinner, @ArrayRes int data, OnItemSelectedListener listener) {
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter
+                .createFromResource(this, data, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(listener);
+    }
+
+    private void setVoicePitch(int position) {
+        Voice.Pitch pitch;
+
+        switch (position) {
+            case 0:
+                pitch = Voice.Pitch.VERY_LOW;
+                break;
+            case 1:
+                pitch = Voice.Pitch.LOW;
+                break;
+            case 2:
+                pitch = Voice.Pitch.NORMAL;
+                break;
+            case 3:
+                pitch = Voice.Pitch.HIGH;
+                break;
+            case 4:
+                pitch = Voice.Pitch.VERY_HIGH;
+                break;
+            default:
+                pitch = Voice.Pitch.NORMAL;
+        }
+
+        voice.setPitch(pitch);
+    }
+
+    private void setVoiceSpeed(int position) {
+        Voice.Speed pitch;
+
+        switch (position) {
+            case 0:
+                pitch = Voice.Speed.HALF;
+                break;
+            case 1:
+                pitch = Voice.Speed.NORMAL;
+                break;
+            case 2:
+                pitch = Voice.Speed.ONE_AND_HALF;
+                break;
+            case 3:
+                pitch = Voice.Speed.DOUBLE;
+                break;
+            default:
+                pitch = Voice.Speed.NORMAL;
+        }
+
+        voice.setSpeechSpeed(pitch);
     }
 }

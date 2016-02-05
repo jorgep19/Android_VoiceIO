@@ -9,6 +9,10 @@ import android.widget.Toast;
 import java.util.Locale;
 import java.util.Random;
 
+/**
+ * Helper class that encapsulates the logic required for reading text through the phone's speakers,
+ * aka Text to Speech.
+ */
 public class Voice implements TextToSpeech.OnInitListener {
     private final String TAG = Voice.class.getName();
 
@@ -93,5 +97,45 @@ public class Voice implements TextToSpeech.OnInitListener {
      */
     public void setToFrench() {
         locale = Locale.FRANCE;
+    }
+
+
+    public enum Speed { HALF, NORMAL, ONE_AND_HALF, DOUBLE }
+    public void setSpeechSpeed(Speed speed) {
+        switch (speed) {
+            case HALF:
+                tts.setSpeechRate(0.5f);
+                break;
+            case NORMAL:
+                tts.setSpeechRate(1f);
+                break;
+            case ONE_AND_HALF:
+                tts.setSpeechRate(1.5f);
+                break;
+            case DOUBLE:
+                tts.setSpeechRate(2f);
+                break;
+        }
+    }
+
+    public enum Pitch { VERY_LOW, LOW, NORMAL, HIGH, VERY_HIGH }
+    public void setPitch(Pitch pitch) {
+        switch (pitch) {
+            case VERY_LOW:
+                tts.setPitch(0.01f);
+                break;
+            case LOW:
+                tts.setPitch(0.5f);
+                break;
+            case NORMAL:
+                tts.setPitch(1f);
+                break;
+            case HIGH:
+                tts.setPitch(1.5f);
+                break;
+            case VERY_HIGH:
+                tts.setPitch(2f);
+                break;
+        }
     }
 }
