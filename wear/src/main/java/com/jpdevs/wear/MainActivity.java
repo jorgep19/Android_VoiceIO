@@ -43,12 +43,13 @@ public class MainActivity extends Activity {
         micBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                ears.startListening(MainActivity.this);
-                Random rand = new Random();
-                new TellPhoneTask(gClient)
-                    .execute(new Ears.Guess("1", rand.nextFloat()),
-                             new Ears.Guess("2", rand.nextFloat()),
-                             new Ears.Guess("3", rand.nextFloat()));
+                ears.startListening(MainActivity.this);
+                // Just for debugging
+//                Random rand = new Random();
+//                new TellPhoneTask(gClient)
+//                    .execute(new Ears.Guess("1", rand.nextFloat()),
+//                             new Ears.Guess("2", rand.nextFloat()),
+//                             new Ears.Guess("3", rand.nextFloat()));
             }
         });
 
