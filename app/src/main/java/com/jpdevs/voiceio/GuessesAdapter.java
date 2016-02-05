@@ -1,6 +1,7 @@
 package com.jpdevs.voiceio;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,8 +15,16 @@ import com.jpdevs.Voice;
  * http://developer.android.com/training/material/lists-cards.html
  */
 public class GuessesAdapter extends RecyclerView.Adapter<GuessesAdapter.ViewHolder> {
+    private static final SparseArray<String> msgMap = new SparseArray<>();
+    static {
+        msgMap.put(R.id.spanish_item, "Estoy %s por ciento seguro que dijistes %s");
+        msgMap.put(R.id.english_item, "I'm %s percent sure you said %s");
+        msgMap.put(R.id.french_item, "Je suis %s pour cent sûr vous avez dit %s");
+    }
+
     private Ears.Guess[] guesses;
     private Voice voice;
+    private int languageId;
 
     public GuessesAdapter(Voice voice) {
         guesses = new Ears.Guess[0];
@@ -45,11 +54,14 @@ public class GuessesAdapter extends RecyclerView.Adapter<GuessesAdapter.ViewHold
         notifyDataSetChanged();
     }
 
+    public void setLanguage(int languageId) {
+        this.languageId = languageId;
+    }
     public Ears.Guess[] getGuesses() {
         return guesses;
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder
+    public class ViewHolder extends RecyclerView.ViewHolder
         implements View.OnClickListener {
         private Voice voice;
         private String message;
@@ -74,7 +86,7 @@ public class GuessesAdapter extends RecyclerView.Adapter<GuessesAdapter.ViewHold
 
         public void setItem(Ears.Guess guess) {
             String confidenceStr = String.format("%.2f", (guess.confidence*100));
-            message = String.format("I'm %s percent sure you said %s", confidenceStr, guess.meaning);
+            message = String.format(msgMap.get(languageId), confidenceStr, guess.meaning);
 
             titleText.setText(guess.meaning);
             subtitleText.setText(confidenceStr);

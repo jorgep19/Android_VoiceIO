@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -40,6 +41,13 @@ public class MainActivity extends AppCompatActivity {
     private static final String SPEED_STATE = "com.jpdevs.voiceio.MainActivity.state.speech";
     private static final String PITCH_STATE = "com.jpdevs.voiceio.MainActivity.state.pitch";
 
+    private static final SparseArray<String> languageMsgMap = new SparseArray<>();
+    static {
+        languageMsgMap.put(R.id.spanish_item, "Hablemos en Español");
+        languageMsgMap.put(R.id.english_item, "Let's speak English");
+        languageMsgMap.put(R.id.french_item, "Parlons français");
+    }
+
     /**
      *  This method encapsulates the logic for starting the Main Activity
      *
@@ -63,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
     private GuessesAdapter adapter;
     private int voiceSpeed;
     private int voicePitch;
+    private int languageId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -160,6 +169,8 @@ public class MainActivity extends AppCompatActivity {
             speedSpinner.setSelection(savedInstanceState.getInt(PITCH_STATE));
             Spinner pitchSpinner = (Spinner) findViewById(R.id.pitch_spinner);
             pitchSpinner.setSelection(savedInstanceState.getInt(SPEED_STATE));
+
+            setLanguage(savedInstanceState.getInt(LANG_STATE));
         }
     }
 
@@ -172,34 +183,15 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Based on the language picked by the user see our ears to listen for
-        // the appropriate language
-        String language;
-        switch (item.getItemId()) {
-            case R.id.spanish_item:
-                language = getString(R.string.spanish);
-                ears.setToSpanish();
-                voice.setToSpanish();
-                break;
-            case R.id.english_item:
-                language = getString(R.string.english);
-                ears.setToEnglish();
-                voice.setToEnglish();
-                break;
-            case R.id.french_item:
-                language = getString(R.string.french);
-                ears.setToFrench();
-                voice.setToFrench();
-                break;
-            default:
-                return super.onOptionsItemSelected(item);
+        if(setLanguage(item.getItemId())) {
+            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.speakFab);
+            Snackbar.make(fab, languageMsgMap.get(item.getItemId()), Snackbar.LENGTH_LONG)
+                    .show();
+
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
         }
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.speakFab);
-        Snackbar.make(fab, String.format("Set language to: %s.", language), Snackbar.LENGTH_LONG)
-            .show();
-
-        return true;
     }
 
     @Override
@@ -222,6 +214,7 @@ public class MainActivity extends AppCompatActivity {
 
         outState.putInt(SPEED_STATE, voiceSpeed);
         outState.putInt(PITCH_STATE, voicePitch);
+        outState.putInt(LANG_STATE, languageId);
     }
 
     @Override
@@ -234,10 +227,10 @@ public class MainActivity extends AppCompatActivity {
     /**
      * For more details check
      * http://developer.android.com/guide/topics/ui/controls/spinner.html
-     * @param spinner
-     * @param data
-     * @param startingPosition
-     * @param listener
+     * @param spinner the spinner view to setup
+     * @param data the id of the array resource for the values of the spinner
+     * @param startingPosition the default starting position for the spinner
+     * @param listener the listener that will be called when an item is selected on the spinner
      */
     private void setupSimpleSpinner(
             Spinner spinner, @ArrayRes int data, int startingPosition, OnItemSelectedListener listener) {
@@ -298,5 +291,31 @@ public class MainActivity extends AppCompatActivity {
         }
 
         voice.setSpeechSpeed(pitch);
+    }
+
+    private boolean setLanguage(int languageId) {
+        this.languageId = languageId;
+        adapter.setLanguage(languageId);
+
+        // Based on the language picked by the user see our ears to listen for
+        // the appropriate language
+        switch (languageId) {
+            case R.id.spanish_item:
+                ears.setToSpanish();
+                voice.setToSpanish();
+                break;
+            case R.id.english_item:
+                ears.setToEnglish();
+                voice.setToEnglish();
+                break;
+            case R.id.french_item:
+                ears.setToFrench();
+                voice.setToFrench();
+                break;
+            default:
+                return false;
+        }
+
+        return true;
     }
 }
