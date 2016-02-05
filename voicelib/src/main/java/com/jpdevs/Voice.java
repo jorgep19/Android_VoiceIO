@@ -29,17 +29,7 @@ public class Voice implements TextToSpeech.OnInitListener {
     @Override
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
-            // set the reading language
-            int result = tts.setLanguage(locale);
-
-            // manage cases when the language is not supported
-            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                Toast.makeText(
-                        context,
-                        "This Language is not supported",
-                        Toast.LENGTH_SHORT)
-                        .show();
-            }
+            setLanguage(Locale.US);
         } else {
             // log any initialization problems that could come from the TextToSpeech object
             Log.e(TAG, "TTS Initialization Failed! Status: " + status);
@@ -82,23 +72,38 @@ public class Voice implements TextToSpeech.OnInitListener {
      * Sets the locale for which the voice input will be parsed to American English
      */
     public void setToEnglish() {
-        locale = Locale.US;
+        setLanguage(Locale.US);
     }
 
     /**
      * Sets the locale for which the voice input will be parsed to Spanish
      */
     public void setToSpanish() {
-        locale = new Locale("es", "ES");
+        setLanguage(new Locale("es", "ES"));
     }
 
     /**
      * Sets the locale for which the voice input will be parsed to French
      */
     public void setToFrench() {
-        locale = Locale.FRANCE;
+        setLanguage(Locale.FRANCE);
     }
 
+
+    private void setLanguage(Locale language) {
+        // set the reading language
+        locale = language;
+        int result = tts.setLanguage(locale);
+
+        // manage cases when the language is not supported
+        if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+            Toast.makeText(
+                    context,
+                    "This Language is not supported",
+                    Toast.LENGTH_SHORT)
+                    .show();
+        }
+    }
 
     public enum Speed { HALF, NORMAL, ONE_AND_HALF, DOUBLE }
     public void setSpeechSpeed(Speed speed) {
