@@ -19,16 +19,19 @@ public class Voice implements TextToSpeech.OnInitListener {
     private Context context;
     private TextToSpeech tts;
     private Locale locale;
+    private boolean isReadyTotalk;
 
     public Voice(Context context) {
         this.context = context;
-        tts = new TextToSpeech(this.context, this);
-        locale = Locale.getDefault();
+        this.tts = new TextToSpeech(this.context, this);
+        this.isReadyTotalk = false;
+        this.locale = Locale.getDefault();
     }
 
     @Override
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
+            isReadyTotalk = true;
             setLanguage(Locale.US);
         } else {
             // log any initialization problems that could come from the TextToSpeech object
@@ -58,6 +61,10 @@ public class Voice implements TextToSpeech.OnInitListener {
      *                     when appropriate
      */
     public void say(String phrase, boolean shouldSayNow) {
+        if(isReadyTotalk) {
+            Log.e(TAG, "I'm not ready to say anything :(");
+        }
+
         int queueMode = shouldSayNow ? TextToSpeech.QUEUE_FLUSH : TextToSpeech.QUEUE_ADD;
         String reqId = String.valueOf(new Random().nextLong());
 
@@ -95,7 +102,7 @@ public class Voice implements TextToSpeech.OnInitListener {
         locale = language;
         int result = tts.setLanguage(locale);
 
-        // manage cases when the language is not supported
+        // Notify the user the language is no currently on the phone
         if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
             Toast.makeText(
                     context,
